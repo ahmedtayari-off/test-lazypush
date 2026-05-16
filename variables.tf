@@ -6,7 +6,11 @@ variable "app_alb_internal" {
   type    = string
 }
 
-variable "app_alb_listeners" {
+variable "app_alb_load_balancer_type" {
+  type    = string
+}
+
+variable "app_alb_target_groups" {
   type    = map(any)
 }
 
@@ -14,19 +18,15 @@ variable "app_alb_tags" {
   type    = map(any)
 }
 
-variable "app_alb_target_groups" {
+variable "app_alb_listeners" {
   type    = map(any)
-}
-
-variable "app_alb_load_balancer_type" {
-  type    = string
 }
 
 variable "app_service_cluster_name" {
   type    = string
 }
 
-variable "app_service_tags" {
+variable "app_service_autoscaling_capacity_providers" {
   type    = map(any)
 }
 
@@ -38,7 +38,7 @@ variable "app_service_default_capacity_provider_use_fargate" {
   type    = string
 }
 
-variable "app_service_autoscaling_capacity_providers" {
+variable "app_service_tags" {
   type    = map(any)
 }
 
@@ -82,16 +82,16 @@ variable "app_db_skip_final_snapshot" {
   type    = string
 }
 
-variable "app_db_tags" {
-  type    = map(any)
+variable "app_db_engine" {
+  type    = string
 }
 
 variable "app_db_storage_encrypted" {
   type    = string
 }
 
-variable "app_db_engine" {
-  type    = string
+variable "app_db_tags" {
+  type    = map(any)
 }
 
 variable "app_cache_node_type" {
@@ -110,19 +110,19 @@ variable "app_cache_replication_group_id" {
   type    = string
 }
 
-variable "app_cache_tags" {
-  type    = map(any)
+variable "app_cache_at_rest_encryption_enabled" {
+  type    = string
 }
 
-variable "app_cache_transit_encryption_enabled" {
-  type    = string
+variable "app_cache_tags" {
+  type    = map(any)
 }
 
 variable "app_cache_engine" {
   type    = string
 }
 
-variable "app_cache_at_rest_encryption_enabled" {
+variable "app_cache_transit_encryption_enabled" {
   type    = string
 }
 
@@ -130,19 +130,19 @@ variable "app_assets_bucket" {
   type    = string
 }
 
-variable "app_assets_lifecycle_rule" {
-  type    = list(any)
+variable "app_assets_versioning" {
+  type    = map(any)
 }
 
-variable "app_assets_server_side_encryption_configuration" {
-  type    = map(any)
+variable "app_assets_lifecycle_rule" {
+  type    = list(any)
 }
 
 variable "app_assets_tags" {
   type    = map(any)
 }
 
-variable "app_assets_versioning" {
+variable "app_assets_server_side_encryption_configuration" {
   type    = map(any)
 }
 
@@ -206,12 +206,12 @@ variable "ecs_task_role_create_role" {
   type    = string
 }
 
-variable "ecs_task_role_tags" {
-  type    = map(any)
-}
-
 variable "ecs_task_role_role_requires_mfa" {
   type    = string
+}
+
+variable "ecs_task_role_tags" {
+  type    = map(any)
 }
 
 variable "sg_rds_name" {
