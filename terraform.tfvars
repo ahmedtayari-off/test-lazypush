@@ -1,19 +1,19 @@
-# Terraform variable values — edit before applying
+# Terraform variable values — edit before apply
 
 # app_alb
 app_alb_name = "app-alb"
 app_alb_internal = "false"
-app_alb_load_balancer_type = "application"
-app_alb_target_groups = {}
 app_alb_tags = {}
+app_alb_load_balancer_type = "application"
 app_alb_listeners = {}
+app_alb_target_groups = {}
 
 # app_service
 app_service_cluster_name = "app-cluster"
-app_service_autoscaling_capacity_providers = {}
-app_service_fargate_capacity_providers = {}
 app_service_default_capacity_provider_use_fargate = "true"
 app_service_tags = {}
+app_service_autoscaling_capacity_providers = {}
+app_service_fargate_capacity_providers = {}
 
 # app_db
 app_db_family = "postgres15"
@@ -26,26 +26,26 @@ app_db_instance_class = "db.t3.medium"
 app_db_allocated_storage = "50"
 app_db_deletion_protection = "true"
 app_db_skip_final_snapshot = "false"
+app_db_tags = {}
 app_db_engine = "postgres"
 app_db_storage_encrypted = "true"
-app_db_tags = {}
 
 # app_cache
 app_cache_node_type = "cache.t3.micro"
 app_cache_engine_version = "7.0"
 app_cache_num_cache_clusters = "2"
 app_cache_replication_group_id = "app-cache"
-app_cache_at_rest_encryption_enabled = "true"
-app_cache_tags = {}
-app_cache_engine = "redis"
 app_cache_transit_encryption_enabled = "true"
+app_cache_tags = {}
+app_cache_at_rest_encryption_enabled = "true"
+app_cache_engine = "redis"
 
 # app_assets
 app_assets_bucket = "app-assets-prod"
-app_assets_versioning = {}
-app_assets_lifecycle_rule = []
-app_assets_tags = {}
 app_assets_server_side_encryption_configuration = {}
+app_assets_tags = {}
+app_assets_lifecycle_rule = []
+app_assets_versioning = {}
 
 # sg_alb
 sg_alb_name = "alb"
@@ -91,9 +91,9 @@ ecs_task_role_role_name = "app-ecs-task-role"
 ecs_task_role_trusted_role_services = ["ecs-tasks.amazonaws.com"]
 ecs_task_role_create_instance_profile = "false"
 ecs_task_role_custom_role_policy_arns = ["arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"]
+ecs_task_role_tags = {}
 ecs_task_role_create_role = "true"
 ecs_task_role_role_requires_mfa = "false"
-ecs_task_role_tags = {}
 
 # sg_rds
 sg_rds_name = "rds"
@@ -112,17 +112,17 @@ sg_rds_egress_with_cidr_blocks = [{
       cidr_blocks = "0.0.0.0/0"
     }]
 
-# sg_redis
-sg_redis_name = "redis"
-sg_redis_description = "Allow Redis from ECS only"
-sg_redis_tags = {}
-sg_redis_ingress_with_source_security_group_id = [{
+# sg_rediss
+sg_rediss_name = "rediss"
+sg_rediss_description = "Allow Redis from ECS only"
+sg_rediss_tags = {}
+sg_rediss_ingress_with_source_security_group_id = [{
       protocol = "tcp"
       from_port = "6379"
       to_port = "6379"
       source_security_group_id = "sg-ecs"
     }]
-sg_redis_egress_with_cidr_blocks = [{
+sg_rediss_egress_with_cidr_blocks = [{
       protocol = "-1"
       from_port = "0"
       to_port = "0"

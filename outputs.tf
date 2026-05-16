@@ -114,12 +114,12 @@ output "sg_rds_security_group_arn" {
   value = module.sg_rds.security_group_arn
 }
 
-output "sg_redis_security_group_id" {
-  value = module.sg_redis.security_group_id
+output "sg_rediss_security_group_id" {
+  value = module.sg_rediss.security_group_id
 }
 
-output "sg_redis_security_group_arn" {
-  value = module.sg_redis.security_group_arn
+output "sg_rediss_security_group_arn" {
+  value = module.sg_rediss.security_group_arn
 }
 
 output "main_vpc_vpc_id" {
