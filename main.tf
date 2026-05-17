@@ -4,7 +4,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.47"
+      version = ">= 5.30"
     }
   }
 }
@@ -14,153 +14,38 @@ provider "aws" {
 }
 
 
-module "app_alb" {
-  source = "./modules/terraform-aws-alb"
+module "ec2_instance" {
+  source = "./modules/terraform-aws-ec2-instance"
 
-  name = var.app_alb_name
-  internal = var.app_alb_internal
-  tags = var.app_alb_tags
-  load_balancer_type = var.app_alb_load_balancer_type
-  listeners = var.app_alb_listeners
-  target_groups = var.app_alb_target_groups
-  security_groups = module.sg_alb.security_group_id
-  vpc_id = module.main_vpc.vpc_id
-  subnets = module.main_vpc.public_subnets
+  name = var.ec2_instance_name
+  ami_ssm_parameter = var.ec2_instance_ami_ssm_parameter
+  instance_type = var.ec2_instance_instance_type
+  tags = var.ec2_instance_tags
+  subnet_id = module.vpc.private_subnets[0]
+  associate_public_ip_address = var.ec2_instance_associate_public_ip_address
+  vpc_security_group_ids = [module.security_group.security_group_id]
 }
 
-module "app_service" {
-  source = "./modules/terraform-aws-ecs"
-
-  cluster_name = var.app_service_cluster_name
-  default_capacity_provider_use_fargate = var.app_service_default_capacity_provider_use_fargate
-  tags = var.app_service_tags
-  autoscaling_capacity_providers = var.app_service_autoscaling_capacity_providers
-  services = {
-      app-service = {
-      create_security_group = false
-      create_iam_role = false
-      create_task_exec_iam_role = false
-      create_tasks_iam_role = false
-      security_group_ids = [module.sg_ecs.security_group_id]
-      task_exec_iam_role_arn = module.ecs_task_role.iam_role_arn
-      subnet_ids = module.main_vpc.private_subnets
-    }
-    }
-  fargate_capacity_providers = var.app_service_fargate_capacity_providers
-}
-
-module "app_db" {
-  source = "./modules/terraform-aws-rds"
-
-  family = var.app_db_family
-  db_name = var.app_db_db_name
-  multi_az = var.app_db_multi_az
-  username = var.app_db_username
-  identifier = var.app_db_identifier
-  engine_version = var.app_db_engine_version
-  instance_class = var.app_db_instance_class
-  allocated_storage = var.app_db_allocated_storage
-  deletion_protection = var.app_db_deletion_protection
-  skip_final_snapshot = var.app_db_skip_final_snapshot
-  vpc_security_group_ids = module.sg_rds.security_group_id
-  tags = var.app_db_tags
-  subnet_ids = module.main_vpc.database_subnets
-  engine = var.app_db_engine
-  storage_encrypted = var.app_db_storage_encrypted
-  db_subnet_group_name = module.main_vpc.database_subnet_group_name
-}
-
-module "app_cache" {
-  source = "./modules/terraform-aws-elasticache"
-
-  node_type = var.app_cache_node_type
-  engine_version = var.app_cache_engine_version
-  num_cache_clusters = var.app_cache_num_cache_clusters
-  replication_group_id = var.app_cache_replication_group_id
-  transit_encryption_enabled = var.app_cache_transit_encryption_enabled
-  tags = var.app_cache_tags
-  at_rest_encryption_enabled = var.app_cache_at_rest_encryption_enabled
-  security_group_ids = module.sg_rediss.security_group_id
-  engine = var.app_cache_engine
-  subnet_group_name = module.main_vpc.elasticache_subnet_group_name
-}
-
-module "app_assets" {
-  source = "./modules/terraform-aws-s3-bucket"
-
-  bucket = var.app_assets_bucket
-  server_side_encryption_configuration = var.app_assets_server_side_encryption_configuration
-  tags = var.app_assets_tags
-  lifecycle_rule = var.app_assets_lifecycle_rule
-  versioning = var.app_assets_versioning
-}
-
-module "sg_alb" {
+module "security_group" {
   source = "./modules/terraform-aws-security-group"
 
-  name = var.sg_alb_name
-  description = var.sg_alb_description
-  tags = var.sg_alb_tags
-  ingress_with_cidr_blocks = var.sg_alb_ingress_with_cidr_blocks
-  egress_with_cidr_blocks = var.sg_alb_egress_with_cidr_blocks
-  vpc_id = module.main_vpc.vpc_id
+  description = var.security_group_description
+  tags = var.security_group_tags
+  name = var.security_group_name
+  vpc_id = module.vpc.vpc_id
 }
 
-module "sg_ecs" {
-  source = "./modules/terraform-aws-security-group"
-
-  name = var.sg_ecs_name
-  description = var.sg_ecs_description
-  tags = var.sg_ecs_tags
-  ingress_with_source_security_group_id = var.sg_ecs_ingress_with_source_security_group_id
-  egress_with_cidr_blocks = var.sg_ecs_egress_with_cidr_blocks
-  vpc_id = module.main_vpc.vpc_id
-}
-
-module "ecs_task_role" {
-  source = "./modules/terraform-aws-iam-role/modules/iam-assumable-role"
-
-  role_name = var.ecs_task_role_role_name
-  trusted_role_services = var.ecs_task_role_trusted_role_services
-  create_instance_profile = var.ecs_task_role_create_instance_profile
-  custom_role_policy_arns = var.ecs_task_role_custom_role_policy_arns
-  tags = var.ecs_task_role_tags
-  create_role = var.ecs_task_role_create_role
-  role_requires_mfa = var.ecs_task_role_role_requires_mfa
-}
-
-module "sg_rds" {
-  source = "./modules/terraform-aws-security-group"
-
-  name = var.sg_rds_name
-  description = var.sg_rds_description
-  tags = var.sg_rds_tags
-  ingress_with_source_security_group_id = var.sg_rds_ingress_with_source_security_group_id
-  egress_with_cidr_blocks = var.sg_rds_egress_with_cidr_blocks
-  vpc_id = module.main_vpc.vpc_id
-}
-
-module "sg_rediss" {
-  source = "./modules/terraform-aws-security-group"
-
-  name = var.sg_rediss_name
-  description = var.sg_rediss_description
-  tags = var.sg_rediss_tags
-  ingress_with_source_security_group_id = var.sg_rediss_ingress_with_source_security_group_id
-  egress_with_cidr_blocks = var.sg_rediss_egress_with_cidr_blocks
-  vpc_id = module.main_vpc.vpc_id
-}
-
-module "main_vpc" {
+module "vpc" {
   source = "./modules/terraform-aws-vpc"
 
-  azs = var.main_vpc_azs
-  cidr = var.main_vpc_cidr
-  name = var.main_vpc_name
-  public_subnets = var.main_vpc_public_subnets
-  private_subnets = var.main_vpc_private_subnets
-  database_subnets = var.main_vpc_database_subnets
-  enable_nat_gateway = var.main_vpc_enable_nat_gateway
-  single_nat_gateway = var.main_vpc_single_nat_gateway
-  enable_dns_hostnames = var.main_vpc_enable_dns_hostnames
+  name = var.vpc_name
+  cidr = var.vpc_cidr
+  azs = var.vpc_azs
+  enable_nat_gateway = var.vpc_enable_nat_gateway
+  single_nat_gateway = var.vpc_single_nat_gateway
+  enable_dns_hostnames = var.vpc_enable_dns_hostnames
+  private_subnets = var.vpc_private_subnets
+  public_subnets = var.vpc_public_subnets
+  database_subnets = var.vpc_database_subnets
+  elasticache_subnets = var.vpc_elasticache_subnets
 }
